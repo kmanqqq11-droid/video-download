@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Downloader">
+  <title>Video Downloader</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main class="card">
+    <h1>⚡ Video Downloader</h1>
+    <p class="sub">Download videos from supported platforms</p>
+
+    <section id="login" hidden>
+      <input id="pin" type="password" inputmode="numeric" autocomplete="current-password"
+             placeholder="🔒 Enter PIN" aria-label="PIN">
+      <button id="unlock" class="primary" type="button">Unlock</button>
+      <p id="loginMsg" class="message" role="status" aria-live="polite"></p>
+    </section>
+
+    <div id="app" hidden>
+    <div class="field">
+      <input id="url" type="url" inputmode="url" autocomplete="off" autocapitalize="off"
+             spellcheck="false" placeholder="🔗 Paste video URL" aria-label="Video URL">
+      <button id="paste" type="button" class="ghost" aria-label="Paste from clipboard">Paste</button>
+    </div>
+    <button id="get" class="primary" type="button">Get Video</button>
+    <p id="message" class="message" role="status" aria-live="polite"></p>
+
+    <section id="result" hidden>
+      <hr>
+      <p class="platform">Platform: <strong id="platform"></strong></p>
+      <div class="thumb"><img id="thumb" alt="Video thumbnail" referrerpolicy="no-referrer"></div>
+      <h2 id="title"></h2>
+      <p id="meta" class="meta"></p>
+
+      <label for="quality">Quality</label>
+      <select id="quality"></select>
+
+      <button id="download" class="primary" type="button">⬇ Download</button>
+      <div id="progressWrap" class="progress" hidden>
+        <div id="bar"></div>
+      </div>
+    </section>
+    </div>
+
+    <p class="legal">Only download content you own or have permission to save. Respect each platform's terms and copyright law.</p>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Downloader">
+  <title>Video Downloader</title>
+  <style>
+:root {
+  --bg: #0f172a; --card: #1e293b; --text: #f1f5f9; --muted: #94a3b8;
+  --accent: #6366f1; --accent-hover: #818cf8; --border: #334155; --danger: #f87171; --ok: #4ade80;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body {
+  background: var(--bg); color: var(--text);
+  font: 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+  display: flex; justify-content: center;
+}
+.card { width: 100%; max-width: 480px; background: var(--card); border-radius: 20px; padding: 24px 20px; align-self: flex-start; }
+h1 { margin: 0; font-size: 1.5rem; text-align: center; }
+h2 { font-size: 1rem; margin: 12px 0 2px; word-break: break-word; }
+.sub { text-align: center; color: var(--muted); margin: 6px 0 20px; }
+.field { display: flex; gap: 8px; margin-bottom: 12px; }
+input, select {
+  width: 100%; padding: 14px; font-size: 16px; color: var(--text); background: var(--bg);
+  border: 1px solid var(--border); border-radius: 12px; outline: none;
+}
+input:focus, select:focus { border-color: var(--accent); }
+button { font: inherit; border: 0; border-radius: 12px; cursor: pointer; }
+button.primary { width: 100%; padding: 14px; background: var(--accent); color: #fff; font-weight: 600; margin-top: 12px; }
+button.primary:hover:not(:disabled) { background: var(--accent-hover); }
+button:disabled { opacity: .55; cursor: not-allowed; }
+button.ghost { padding: 0 14px; background: var(--bg); color: var(--muted); border: 1px solid var(--border); }
+hr { border: 0; border-top: 1px solid var(--border); margin: 20px 0; }
+.message { min-height: 1.4em; margin: 10px 0 0; text-align: center; color: var(--muted); font-size: .9rem; }
+.message.error { color: var(--danger); }
+.message.ok { color: var(--ok); }
+.platform { margin: 0 0 10px; color: var(--muted); }
+.platform strong { color: var(--text); }
+.thumb { aspect-ratio: 16 / 9; background: var(--bg); border-radius: 12px; overflow: hidden; }
+.thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.meta { color: var(--muted); font-size: .85rem; margin: 0 0 14px; }
+label { display: block; margin-bottom: 6px; color: var(--muted); font-size: .9rem; }
+.progress { height: 8px; background: var(--bg); border-radius: 99px; overflow: hidden; margin-top: 14px; }
+.progress div { height: 100%; width: 0; background: var(--accent); transition: width .3s; }
+.progress.indeterminate div { width: 40%; animation: slide 1.1s infinite ease-in-out; }
+@keyframes slide { 0% { margin-left: -40%; } 100% { margin-left: 100%; } }
+.legal { margin: 20px 0 0; font-size: .75rem; color: var(--muted); text-align: center; }
+[hidden] { display: none !important; }
+
+.server{display:flex;gap:8px;align-items:center;margin-top:18px;font-size:.8rem;color:var(--muted)}
+.server input{padding:8px 10px;font-size:.8rem}
+.server .dot{width:10px;height:10px;border-radius:50%;background:#64748b;flex:none}
+.server .dot.on{background:var(--ok)}.server .dot.off{background:var(--danger)}
+</style>
+</head>
+<body>
+  <main class="card">
+    <h1>⚡ Video Downloader</h1>
+    <p class="sub">Download videos from supported platforms</p>
+
+    <section id="login" hidden>
+      <input id="pin" type="password" inputmode="numeric" autocomplete="current-password"
+             placeholder="🔒 Enter PIN" aria-label="PIN">
+      <button id="unlock" class="primary" type="button">Unlock</button>
+      <p id="loginMsg" class="message" role="status" aria-live="polite"></p>
+    </section>
+
+    <div id="app" hidden>
+    <div class="field">
+      <input id="url" type="url" inputmode="url" autocomplete="off" autocapitalize="off"
+             spellcheck="false" placeholder="🔗 Paste video URL" aria-label="Video URL">
+      <button id="paste" type="button" class="ghost" aria-label="Paste from clipboard">Paste</button>
+    </div>
+    <button id="get" class="primary" type="button">Get Video</button>
+    <p id="message" class="message" role="status" aria-live="polite"></p>
+
+    <section id="result" hidden>
+      <hr>
+      <p class="platform">Platform: <strong id="platform"></strong></p>
+      <div class="thumb"><img id="thumb" alt="Video thumbnail" referrerpolicy="no-referrer"></div>
+      <h2 id="title"></h2>
+      <p id="meta" class="meta"></p>
+
+      <label for="quality">Quality</label>
+      <select id="quality"></select>
+
+      <button id="download" class="primary" type="button">⬇ Download</button>
+      <div id="progressWrap" class="progress" hidden>
+        <div id="bar"></div>
+      </div>
+    </section>
+    </div>
+
+
+    <div class="server">
+      <span id="dot" class="dot"></span>
+      <input id="server" type="url" spellcheck="false" aria-label="Server address" value="http://localhost:3000">
+    </div>
+
+    <p class="legal">Only download content you own or have permission to save. Respect each platform's terms and copyright law.</p>
+  </main>
+  <script>
+(() => {
+  const el = document.getElementById('server'), dot = document.getElementById('dot');
+  try { const saved = localStorage.getItem('vd_server'); if (saved) el.value = saved; } catch (e) {}
+  window.VD_API_BASE = el.value.trim();
+  const check = async () => {
+    dot.className = 'dot';
+    try {
+      const r = await fetch(window.VD_API_BASE.replace(/\/+$/, '') + '/api/auth');
+      dot.className = 'dot ' + (r.ok ? 'on' : 'off');
+      dot.title = r.ok ? 'Server connected' : 'Server error';
+    } catch (e) { dot.className = 'dot off'; dot.title = 'Server not reachable. Start it with the Start script.'; }
+  };
+  el.addEventListener('change', () => {
+    window.VD_API_BASE = el.value.trim();
+    try { localStorage.setItem('vd_server', window.VD_API_BASE); } catch (e) {}
+    check();
+    if (window.VD_init) window.VD_init();
+  });
+  check();
+})();
+</script>
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const urlEl = $('url'), getBtn = $('get'), pasteBtn = $('paste'), msg = $('message');
+  const result = $('result'), dlBtn = $('download'), qualityEl = $('quality');
+  const progWrap = $('progressWrap'), bar = $('bar');
+  const appEl = $('app'), loginEl = $('login'), pinEl = $('pin'), unlockBtn = $('unlock'), loginMsg = $('loginMsg');
+
+  let current = null; // { url, platform }
+  let pollTimer = null;
+
+  // ---- API + auth ----
+  const base = () => (window.VD_API_BASE || '').replace(/\/+$/, '');
+  const tokenKey = () => 'vd_token:' + (base() || location.origin);
+  const getToken = () => { try { return localStorage.getItem(tokenKey()) || ''; } catch { return ''; } };
+  const setToken = (t) => { try { t ? localStorage.setItem(tokenKey(), t) : localStorage.removeItem(tokenKey()); } catch { /* ignore */ } };
+
+  function showLogin() { appEl.hidden = true; loginEl.hidden = false; pinEl.focus(); }
+  function showApp() { loginEl.hidden = true; appEl.hidden = false; }
+
+  async function api(path, opts = {}) {
+    const headers = { 'Content-Type': 'application/json' };
+    const t = getToken();
+    if (t) headers.Authorization = 'Bearer ' + t;
+    const res = await fetch(base() + path, { ...opts, headers });
+    const data = await res.json().catch(() => ({}));
+    if (res.status === 401 && data.code === 'auth') {
+      setToken('');
+      stopPolling();
+      showLogin();
+      throw new Error('Please enter your PIN');
+    }
+    if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
+    return data;
+  }
+
+  async function init() {
+    try {
+      const a = await api('/api/auth');
+      if (a.required && !a.authenticated) showLogin(); else showApp();
+    } catch {
+      showApp(); // server unreachable: show the app; requests will report the error
+    }
+  }
+  window.VD_init = init;
+
+  async function unlock() {
+    const pin = pinEl.value.trim();
+    if (!pin) return;
+    unlockBtn.disabled = true;
+    loginMsg.textContent = '';
+    try {
+      const { token } = await api('/api/login', { method: 'POST', body: JSON.stringify({ pin }) });
+      setToken(token);
+      pinEl.value = '';
+      showApp();
+    } catch (e) {
+      loginMsg.textContent = e.message;
+      loginMsg.className = 'message error';
+      pinEl.value = '';
+    } finally {
+      unlockBtn.disabled = false;
+    }
+  }
+  unlockBtn.addEventListener('click', unlock);
+  pinEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') unlock(); });
+
+  // ---- UI ----
+  function say(text, kind = '') {
+    msg.textContent = text;
+    msg.className = 'message ' + kind;
+  }
+
+  const fmtDuration = (s) => {
+    if (!s) return '';
+    const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = Math.floor(s % 60);
+    return (h ? h + ':' + String(m).padStart(2, '0') : m) + ':' + String(sec).padStart(2, '0');
+  };
+
+  pasteBtn.addEventListener('click', async () => {
+    try {
+      urlEl.value = (await navigator.clipboard.readText()).trim();
+      urlEl.focus();
+    } catch {
+      say('Clipboard access was blocked. Long-press the field to paste.', 'error');
+    }
+  });
+
+  urlEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') getBtn.click(); });
+
+  getBtn.addEventListener('click', async () => {
+    const url = urlEl.value.trim();
+    if (!url) return say('Paste a video URL first.', 'error');
+    stopPolling();
+    result.hidden = true;
+    progWrap.hidden = true;
+    getBtn.disabled = true;
+    say('Fetching video info…');
+    try {
+      const info = await api('/api/info', { method: 'POST', body: JSON.stringify({ url }) });
+      current = { url: info.url, platform: info.platform };
+      $('platform').textContent = info.platform;
+      $('title').textContent = info.title;
+      $('meta').textContent = [info.uploader, fmtDuration(info.duration)].filter(Boolean).join(' · ');
+      const img = $('thumb');
+      if (info.thumbnail) { img.src = info.thumbnail; img.hidden = false; } else { img.removeAttribute('src'); img.hidden = true; }
+      qualityEl.innerHTML = '';
+      for (const q of info.qualities) {
+        const o = document.createElement('option');
+        o.value = q.id; o.textContent = q.label;
+        qualityEl.appendChild(o);
+      }
+      result.hidden = false;
+      say('');
+    } catch (e) {
+      say(e.message, 'error');
+    } finally {
+      getBtn.disabled = false;
+    }
+  });
+
+  dlBtn.addEventListener('click', async () => {
+    if (!current) return;
+    dlBtn.disabled = true;
+    setProgress(0, true);
+    say('Starting…');
+    try {
+      const { id } = await api('/api/jobs', {
+        method: 'POST',
+        body: JSON.stringify({ url: current.url, quality: qualityEl.value }),
+      });
+      poll(id);
+    } catch (e) {
+      failed(e.message);
+    }
+  });
+
+  function setProgress(fraction, indeterminate = false) {
+    progWrap.hidden = false;
+    progWrap.classList.toggle('indeterminate', indeterminate);
+    bar.style.width = indeterminate ? '' : Math.round(fraction * 100) + '%';
+  }
+
+  function stopPolling() { clearTimeout(pollTimer); pollTimer = null; }
+
+  function failed(text) {
+    stopPolling();
+    progWrap.hidden = true;
+    dlBtn.disabled = false;
+    say(text, 'error');
+  }
+
+  function poll(id) {
+    pollTimer = setTimeout(async () => {
+      try {
+        const j = await api('/api/jobs/' + id);
+        if (j.status === 'error') return failed(j.error || 'Download failed');
+        if (j.status === 'done') {
+          setProgress(1);
+          say('Ready! Saving to your device…', 'ok');
+          const { ticket } = await api(`/api/jobs/${id}/ticket`, { method: 'POST' });
+          const a = document.createElement('a');
+          a.href = `${base()}/api/jobs/${id}/file?ticket=${encodeURIComponent(ticket)}`;
+          a.download = j.filename || '';
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          dlBtn.disabled = false;
+          return stopPolling();
+        }
+        if (j.status === 'processing') { setProgress(1, true); say('Processing…'); }
+        else { setProgress(j.progress, j.progress === 0); say(`Downloading… ${Math.round(j.progress * 100)}%`); }
+        poll(id);
+      } catch (e) {
+        failed(e.message);
+      }
+    }, 800);
+  }
+
+  init();
+})();
+
+</script>
+</body>
+</html>
