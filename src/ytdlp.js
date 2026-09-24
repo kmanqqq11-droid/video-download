@@ -4,7 +4,12 @@ const path = require('node:path');
 const config = require('./config');
 
 function baseArgs() {
-  const args = ['--no-playlist', '--no-warnings', '--socket-timeout', '20'];
+  const args = [
+    '--no-playlist', '--no-warnings', '--socket-timeout', '20',
+    // Use Android + TV embedded clients → bypasses YouTube bot detection
+    // without needing cookies (same method used by public downloader sites)
+    '--extractor-args', 'youtube:player_client=android,tv_embedded',
+  ];
   if (config.cookiesFile) args.push('--cookies', config.cookiesFile);
   return args;
 }
