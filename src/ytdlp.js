@@ -20,7 +20,7 @@ function platformExtractorArgs(url) {
   // Generic fallback for any other extractor
   return ['--extractor-args', '*:player_client=android,ios,tv_embedded'];
 }
-
+function baseArgs(url) {
   const args = [
     '--no-playlist', '--no-warnings', '--socket-timeout', '20',
     // Use a common desktop browser User-Agent – helps avoid bot detection on cloud IPs
@@ -33,6 +33,7 @@ function platformExtractorArgs(url) {
   if (config.cookiesFile) args.push('--cookies', config.cookiesFile);
   return args;
 }
+
 
 function cleanError(stderr) {
   const line =
