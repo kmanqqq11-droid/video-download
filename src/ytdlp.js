@@ -6,27 +6,30 @@ const config = require('./config');
 function platformExtractorArgs(url) {
   const lower = url.toLowerCase();
   if (lower.includes('youtube.com') || lower.includes('youtu.be')) {
-    return ['--extractor-args', 'youtube:player_client=android,tv_embedded'];
+    return ['--extractor-args', 'youtube:player_client=android,ios,tv_embedded'];
   }
   if (lower.includes('tiktok.com')) {
-    return ['--extractor-args', 'tiktok:player_client=android'];
+    return ['--extractor-args', 'tiktok:player_client=android,ios,tv_embedded'];
   }
   if (lower.includes('instagram.com')) {
-    return ['--extractor-args', 'instagram:player_client=android'];
+    return ['--extractor-args', 'instagram:player_client=android,ios,tv_embedded'];
   }
   if (lower.includes('twitter.com')) {
-    return ['--extractor-args', 'twitter:player_client=android'];
+    return ['--extractor-args', 'twitter:player_client=android,ios,tv_embedded'];
   }
   // Generic fallback for any other extractor
-  return ['--extractor-args', '*:player_client=android'];
+  return ['--extractor-args', '*:player_client=android,ios,tv_embedded'];
 }
 
-function baseArgs(url) {
   const args = [
     '--no-playlist', '--no-warnings', '--socket-timeout', '20',
+    // Use a common desktop browser User-Agent – helps avoid bot detection on cloud IPs
+    '--user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
     // Platform‑specific client spoof → avoids captcha / bot verification
     ...platformExtractorArgs(url),
   ];
+  // Optional proxy – set PROXY_URL env var to a residential/forward proxy URL (e.g., http://user:pass@proxyhost:port)
+  if (process.env.PROXY_URL) args.push('--proxy', process.env.PROXY_URL);
   if (config.cookiesFile) args.push('--cookies', config.cookiesFile);
   return args;
 }
