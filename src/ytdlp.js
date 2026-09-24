@@ -3,12 +3,29 @@ const fs = require('node:fs');
 const path = require('node:path');
 const config = require('./config');
 
-function baseArgs() {
+function platformExtractorArgs(url) {
+  const lower = url.toLowerCase();
+  if (lower.includes('youtube.com') || lower.includes('youtu.be')) {
+    return ['--extractor-args', 'youtube:player_client=android,tv_embedded'];
+  }
+  if (lower.includes('tiktok.com')) {
+    return ['--extractor-args', 'tiktok:player_client=android'];
+  }
+  if (lower.includes('instagram.com')) {
+    return ['--extractor-args', 'instagram:player_client=android'];
+  }
+  if (lower.includes('twitter.com')) {
+    return ['--extractor-args', 'twitter:player_client=android'];
+  }
+  // Generic fallback for any other extractor
+  return ['--extractor-args', '*:player_client=android'];
+}
+
+function baseArgs(url) {
   const args = [
     '--no-playlist', '--no-warnings', '--socket-timeout', '20',
-    // Use Android + TV embedded clients → bypasses YouTube bot detection
-    // without needing cookies (same method used by public downloader sites)
-    '--extractor-args', 'youtube:player_client=android,tv_embedded',
+    // Platform‑specific client spoof → avoids captcha / bot verification
+    ...platformExtractorArgs(url),
   ];
   if (config.cookiesFile) args.push('--cookies', config.cookiesFile);
   return args;
@@ -34,7 +51,7 @@ function version() {
 /** Fetch metadata as JSON. Uses spawn with an argument array (no shell). */
 function getInfo(url) {
   return new Promise((resolve, reject) => {
-    const args = ['-J', ...baseArgs(), '--', url];
+    const args = ['-J', ...baseArgs(url), '--', url];
     const p = spawn(config.ytdlpPath, args, { stdio: ['ignore', 'pipe', 'pipe'] });
     let stdout = '';
     let stderr = '';
@@ -91,7 +108,7 @@ function summarize(info) {
  */
 function startDownload({ url, quality, dir, onProgress, onStage }) {
   const args = [
-    ...baseArgs(),
+    ...baseArgs(url),
     '--newline',
     '--progress-template', 'download:PROGRESS %(progress._percent_str)s',
     '--max-filesize', config.maxFilesize,
