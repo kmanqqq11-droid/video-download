@@ -15,11 +15,25 @@ try {
 
 const int = (v, d) => (Number.isFinite(parseInt(v, 10)) ? parseInt(v, 10) : d);
 
+// If YTDLP_COOKIES_BASE64 is set, decode it to a temp file for use on cloud platforms
+// that have no persistent disk (e.g. Render free tier).
+let resolvedCookiesFile = process.env.YTDLP_COOKIES_FILE || '';
+if (!resolvedCookiesFile && process.env.YTDLP_COOKIES_BASE64) {
+  try {
+    const cookiesPath = path.join(os.tmpdir(), 'yt-dlp-cookies.txt');
+    fs.writeFileSync(cookiesPath, Buffer.from(process.env.YTDLP_COOKIES_BASE64, 'base64'));
+    resolvedCookiesFile = cookiesPath;
+    console.log('Cookies loaded from YTDLP_COOKIES_BASE64 env var');
+  } catch (e) {
+    console.warn('Failed to decode YTDLP_COOKIES_BASE64:', e.message);
+  }
+}
+
 module.exports = {
   port: int(process.env.PORT, 3000),
   appPin: (process.env.APP_PIN || '').trim(),
   ytdlpPath: process.env.YTDLP_PATH || 'yt-dlp',
-  cookiesFile: process.env.YTDLP_COOKIES_FILE || '',
+  cookiesFile: resolvedCookiesFile,
   maxConcurrentJobs: int(process.env.MAX_CONCURRENT_JOBS, 2),
   maxDurationSeconds: int(process.env.MAX_DURATION_SECONDS, 3600),
   maxFilesize: process.env.MAX_FILESIZE || '500M',
