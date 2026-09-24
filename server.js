@@ -153,6 +153,34 @@ app.delete('/api/jobs/:id', (req, res) => {
   res.status(204).end();
 });
 
+// ---- Admin: cookie upload ----
+const os = require('node:os');
+const fs = require('node:fs');
+const COOKIE_PATH = require('node:path').join(os.tmpdir(), 'yt-dlp-cookies.txt');
+
+app.post('/api/admin/cookies', (req, res) => {
+  const b64 = req.body && req.body.cookies;
+  if (!b64 || typeof b64 !== 'string') return badRequest(res, 'Missing cookies field');
+  try {
+    fs.writeFileSync(COOKIE_PATH, Buffer.from(b64, 'base64'));
+    config.cookiesFile = COOKIE_PATH;
+    res.json({ ok: true });
+  } catch (e) {
+    badRequest(res, 'Failed to save cookies: ' + e.message, 500);
+  }
+});
+
+app.delete('/api/admin/cookies', (req, res) => {
+  try {
+    if (fs.existsSync(COOKIE_PATH)) fs.unlinkSync(COOKIE_PATH);
+    config.cookiesFile = '';
+    res.json({ ok: true });
+  } catch (e) {
+    badRequest(res, 'Failed to clear cookies: ' + e.message, 500);
+  }
+});
+
+
 app.use('/api', (_req, res) => badRequest(res, 'Not found', 404));
 
 const server = app.listen(config.port, async () => {

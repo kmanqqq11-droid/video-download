@@ -14,7 +14,10 @@
 </head>
 <body>
   <main class="card">
-    <h1>⚡ Video Downloader</h1>
+    <div class="topbar">
+      <h1>⚡ Video Downloader</h1>
+      <button id="settingsBtn" class="icon-btn" title="Settings" aria-label="Settings">⚙️</button>
+    </div>
     <p class="sub">Download videos from supported platforms</p>
 
     <section id="login" hidden>
@@ -49,6 +52,29 @@
       </div>
     </section>
     </div>
+
+    <!-- Settings Panel -->
+    <section id="settings" hidden>
+      <hr>
+      <h2 class="settings-title">⚙️ Settings</h2>
+
+      <div class="settings-block">
+        <p class="settings-label">🍪 YouTube Cookies</p>
+        <p class="settings-desc">Upload a <code>cookies.txt</code> file exported from your browser to fix the "Sign in to confirm not a bot" error on YouTube.</p>
+        <div class="cookie-upload-area" id="cookieDrop">
+          <input type="file" id="cookieFile" accept=".txt,text/plain" style="display:none">
+          <span id="cookieDropLabel">📂 Click or drag & drop <code>cookies.txt</code> here</span>
+        </div>
+        <div class="cookie-status" id="cookieStatus"></div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button id="uploadCookieBtn" class="primary" type="button" style="margin-top:0">Upload Cookies</button>
+          <button id="clearCookieBtn" class="ghost" type="button" style="padding:10px 14px">Clear</button>
+        </div>
+        <p class="settings-hint">How to get cookies.txt: Install <a href="https://chrome.google.com/webstore/detail/get-cookiestxt-locally/cclelndahbckbenkjhflpdbgdldlbecc" target="_blank" rel="noopener">Get cookies.txt LOCALLY</a> → log in to YouTube → click the extension → Export.</p>
+      </div>
+
+      <button id="closeSettings" class="ghost" type="button" style="width:100%;margin-top:12px">✕ Close Settings</button>
+    </section>
 
     <p class="legal">Only download content you own or have permission to save. Respect each platform's terms and copyright law.</p>
   </main>

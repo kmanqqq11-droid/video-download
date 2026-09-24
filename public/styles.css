@@ -41,3 +41,26 @@ label { display: block; margin-bottom: 6px; color: var(--muted); font-size: .9re
 @keyframes slide { 0% { margin-left: -40%; } 100% { margin-left: 100%; } }
 .legal { margin: 20px 0 0; font-size: .75rem; color: var(--muted); text-align: center; }
 [hidden] { display: none !important; }
+
+/* Settings */
+.topbar { display: flex; align-items: center; justify-content: center; position: relative; margin-bottom: 0; }
+.topbar h1 { margin: 0; font-size: 1.5rem; text-align: center; flex: 1; }
+.icon-btn { background: none; border: none; font-size: 1.3rem; cursor: pointer; padding: 6px; border-radius: 8px; color: var(--muted); transition: color .2s, background .2s; }
+.icon-btn:hover { color: var(--text); background: var(--border); }
+.settings-title { margin: 0 0 16px; font-size: 1.1rem; }
+.settings-block { background: var(--bg); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+.settings-label { margin: 0 0 6px; font-weight: 600; font-size: .95rem; }
+.settings-desc { margin: 0 0 12px; color: var(--muted); font-size: .85rem; }
+.settings-hint { margin: 10px 0 0; color: var(--muted); font-size: .78rem; }
+.settings-hint a { color: var(--accent-hover); }
+.cookie-upload-area {
+  border: 2px dashed var(--border); border-radius: 12px; padding: 24px 16px;
+  text-align: center; cursor: pointer; color: var(--muted); font-size: .9rem;
+  transition: border-color .2s, background .2s;
+}
+.cookie-upload-area:hover, .cookie-upload-area.drag-over { border-color: var(--accent); background: rgba(99,102,241,.08); color: var(--text); }
+.cookie-upload-area.has-file { border-color: var(--ok); color: var(--ok); }
+.cookie-status { font-size: .85rem; margin-top: 8px; min-height: 1.2em; }
+.cookie-status.ok { color: var(--ok); }
+.cookie-status.error { color: var(--danger); }
+code { background: rgba(255,255,255,.08); padding: 1px 5px; border-radius: 4px; font-size: .9em; }

@@ -176,6 +176,83 @@
     }, 800);
   }
 
+  // ---- Settings Panel ----
+  const settingsBtn = $('settingsBtn');
+  const settingsEl = $('settings');
+  const closeSettingsBtn = $('closeSettings');
+  const cookieDrop = $('cookieDrop');
+  const cookieFileInput = $('cookieFile');
+  const cookieDropLabel = $('cookieDropLabel');
+  const uploadCookieBtn = $('uploadCookieBtn');
+  const clearCookieBtn = $('clearCookieBtn');
+  const cookieStatus = $('cookieStatus');
+
+  let pendingCookieFile = null;
+
+  settingsBtn.addEventListener('click', () => { settingsEl.hidden = !settingsEl.hidden; });
+  closeSettingsBtn.addEventListener('click', () => { settingsEl.hidden = true; });
+
+  // Click to open file picker
+  cookieDrop.addEventListener('click', () => cookieFileInput.click());
+  cookieFileInput.addEventListener('change', () => {
+    if (cookieFileInput.files[0]) selectCookieFile(cookieFileInput.files[0]);
+  });
+
+  // Drag & drop
+  cookieDrop.addEventListener('dragover', (e) => { e.preventDefault(); cookieDrop.classList.add('drag-over'); });
+  cookieDrop.addEventListener('dragleave', () => cookieDrop.classList.remove('drag-over'));
+  cookieDrop.addEventListener('drop', (e) => {
+    e.preventDefault();
+    cookieDrop.classList.remove('drag-over');
+    const f = e.dataTransfer.files[0];
+    if (f) selectCookieFile(f);
+  });
+
+  function selectCookieFile(file) {
+    pendingCookieFile = file;
+    cookieDrop.classList.add('has-file');
+    cookieDropLabel.textContent = `✅ ${file.name} selected`;
+    cookieStatus.textContent = '';
+    cookieStatus.className = 'cookie-status';
+  }
+
+  uploadCookieBtn.addEventListener('click', async () => {
+    if (!pendingCookieFile) { cookieStatus.textContent = 'Please select a cookies.txt file first.'; cookieStatus.className = 'cookie-status error'; return; }
+    uploadCookieBtn.disabled = true;
+    cookieStatus.textContent = 'Uploading…';
+    cookieStatus.className = 'cookie-status';
+    try {
+      const text = await pendingCookieFile.text();
+      const b64 = btoa(unescape(encodeURIComponent(text)));
+      await api('/api/admin/cookies', { method: 'POST', body: JSON.stringify({ cookies: b64 }) });
+      cookieStatus.textContent = '✅ Cookies uploaded! YouTube downloads should work now.';
+      cookieStatus.className = 'cookie-status ok';
+    } catch (e) {
+      cookieStatus.textContent = '❌ ' + e.message;
+      cookieStatus.className = 'cookie-status error';
+    } finally {
+      uploadCookieBtn.disabled = false;
+    }
+  });
+
+  clearCookieBtn.addEventListener('click', async () => {
+    clearCookieBtn.disabled = true;
+    try {
+      await api('/api/admin/cookies', { method: 'DELETE' });
+      pendingCookieFile = null;
+      cookieDrop.classList.remove('has-file');
+      cookieDropLabel.innerHTML = '📂 Click or drag & drop <code>cookies.txt</code> here';
+      cookieFileInput.value = '';
+      cookieStatus.textContent = 'Cookies cleared.';
+      cookieStatus.className = 'cookie-status ok';
+    } catch (e) {
+      cookieStatus.textContent = '❌ ' + e.message;
+      cookieStatus.className = 'cookie-status error';
+    } finally {
+      clearCookieBtn.disabled = false;
+    }
+  });
+
   init();
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('/sw.js').catch(() => {});
 })();
